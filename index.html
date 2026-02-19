@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MentorMe - Your Personal Mentor 🌟</title>
+  <style>
+    :root {
+      --primary: #6c5ce7;
+      --primary-dark: #5649c0;
+      --accent: #ff7675;
+      --success: #00b894;
+      --warning: #fdcb6e;
+      --bg: #f5f6fa;
+      --card: #ffffff;
+      --text: #2d3436;
+      --gray: #636e72;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; }
+    header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    h1 { font-size: 3rem; margin-bottom: 8px; }
+    .subtitle { font-size: 1.2rem; opacity: 0.9; }
+
+    .dashboard {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+      margin-bottom: 30px;
+    }
+
+    .welcome {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .date { font-size: 1.3rem; color: var(--primary); font-weight: bold; }
+    .quote {
+      font-style: italic;
+      color: var(--gray);
+      margin: 15px 0;
+      font-size: 1.1rem;
+    }
+
+    .next-task {
+      background: linear-gradient(90deg, #ffeaa7, #fdcb6e);
+      padding: 15px;
+      border-radius: 12px;
+      margin: 20px 0;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin: 30px 0;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      transition: transform 0.25s, box-shadow 0.25s;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.18);
+    }
+    .card h3 { color: var(--primary); margin-bottom: 12px; }
+    .card .emoji { font-size: 2.5rem; margin-bottom: 10px; }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .form-group {
+      margin: 15px 0;
+    }
+    label { display: block; margin-bottom: 6px; font-weight: 500; }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #dfe6e9;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: 0.2s;
+    }
+    button:hover { background: var(--primary-dark); }
+
+    .task-list {
+      margin-top: 25px;
+    }
+    .task-item {
+      background: #f8f9fa;
+      padding: 14px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 5px solid var(--accent);
+    }
+    .task-item.completed {
+      opacity: 0.7;
+      text-decoration: line-through;
+      border-left-color: var(--success);
+    }
+    .task-actions button {
+      margin-left: 8px;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+    }
+    .delete { background: #e74c3c; }
+    .delete:hover { background: #c0392b; }
+    .complete { background: var(--success); }
+    .complete:hover { background: #00a376; }
+
+    .progress-bar {
+      height: 20px;
+      background: #dfe6e9;
+      border-radius: 10px;
+      margin: 12px 0;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00b894, #55efc4);
+      transition: width 0.4s;
+    }
+
+    .countdown {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: var(--warning);
+      text-align: center;
+      margin: 15px 0;
+    }
+
+    #notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--primary);
+      color: white;
+      padding: 18px 25px;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      z-index: 1000;
+      display: none;
+      max-width: 350px;
+    }
+
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: 1fr; }
+      h1 { font-size: 2.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>MentorMe 🌟</h1>
+      <p class="subtitle">Your Personal AI-like Mentor & Productivity Coach</p>
+    </header>
+
+    <div id="dashboard" class="dashboard section active">
+      <div class="welcome">
+        <h2>Welcome back, Abhishek! 👋</h2>
+        <div class="date" id="todayDate"></div>
+      </div>
+
+      <div class="quote" id="motQuote">"The secret of getting ahead is getting started." – Mark Twain</div>
+
+      <div class="next-task" id="nextTaskBox">
+        Next task: <span id="nextTask">No upcoming tasks</span>
+      </div>
+
+      <div class="grid">
+        <div class="card" onclick="showSection('weekly')">
+          <div class="emoji">📅</div>
+          <h3>Weekly Planner</h3>
+        </div>
+        <div class="card" onclick="showSection('routine')">
+          <div class="emoji">⏰</div>
+          <h3>Daily Routine</h3>
+        </div>
+        <div class="card" onclick="showSection('projects')">
+          <div class="emoji">🚀</div>
+          <h3>Project Timeline</h3>
+        </div>
+        <div class="card" onclick="showSection('exams')">
+          <div class="emoji">📝</div>
+          <h3>Exam Scheduler</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly Planner -->
+    <div id="weekly" class="section">
+      <div class="dashboard">
+        <h2>Weekly Planner 📅</h2>
+        <div class="form-group">
+          <label>Day</label>
+          <select id="weekDay">
+            <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+            <option>Thursday</option><option>Friday</option><option>Saturday</option>
+            <option>Sunday</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Task</label>
+          <input type="text" id="weekTask" placeholder="e.g. Study DSA"/>
+        </div>
+        <div class="form-group">
+          <label>Time</label>
+          <input type="time" id="weekTime"/>
+        </div>
+        <button onclick="addWeeklyTask()">Add Task</button>
+
+        <div class="task-list" id="weeklyList"></div>
+
+        <button onclick="showSection('dashboard')" style="margin-top:20px;">← Back to Dashboard</button>
+      </div>
+    </div>
+
+    <!-- Daily Routine -->
+    <div id="routine" class="section">
+      <div class="dashboard">
+        <h2>Daily Routine Setup ⏰</h2>
+        <p>Set your fixed daily habits — you'll get notified!</p>
+
+        <div class="form-group">
+          <label>Wake up</label>
+          <input type="time" id="wakeTime"/>
+        </div>
+        <div class="form-group">
+          <label>Meditation</label>
+          <input type="time" id="medTime"/>
+        </div>
+        <div class="form-group">
+          <label>Study</label>
+          <input type="time" id="studyTime"/>
+        </div>
+        <div class="form-group">
+          <label>Gym</label>
+          <input type="time" id="gymTime"/>
+        </div>
+        <div class="form-group">
+          <label>Sleep</label>
+          <input type="time" id="sleepTime"/>
+        </div>
+
+        <button onclick="saveRoutine()">Save Routine</button>
+        <button onclick="showSection('dashboard')" style="margin-left:10px;">← Back</button>
+      </div>
+    </div>
+
+    <!-- Projects -->
+    <div id="projects" class="section">
+      <div class="dashboard">
+        <h2>Project Timeline Manager 🚀</h2>
+
+        <div class="form-group">
+          <label>Project Name</label>
+          <input type="text" id="projName" placeholder="e.g. ML Mini Project"/>
+        </div>
+        <div class="form-group">
+          <label>Deadline</label>
+          <input type="date" id="projDeadline"/>
+        </div>
+        <div class="form-group">
+          <label>Progress (%)</label>
+          <input type="number" id="projProgress" min="0" max="100" value="0"/>
+        </div>
+        <button onclick="addProject()">Add / Update Project</button>
+
+        <div class="task-list" id="projectList"></div>
+
+        <button onclick="showSection('dashboard')" style="margin-top:20px;">← Back</button>
+      </div>
+    </div>
+
+    <!-- Exams -->
+    <div id="exams" class="section">
+      <div class="dashboard">
+        <h2>Exam Scheduler 📝</h2>
+        <div class="form-group">
+          <label>Subject</label>
+          <input type="text" id="examSub" placeholder="e.g. DBMS"/>
+        </div>
+        <div class="form-group">
+          <label>Exam Date</label>
+          <input type="date" id="examDate"/>
+        </div>
+        <button onclick="addExam()">Add Exam</button>
+
+        <div class="task-list" id="examList"></div>
+
+        <button onclick="showSection('dashboard')" style="margin-top:20px;">← Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification pop-up -->
+  <div id="notification"></div>
+
+  <script>
+    // ==================== UTILITIES ====================
+    const ls = {
+      get: key => JSON.parse(localStorage.getItem(key) || '[]'),
+      set: (key, val) => localStorage.setItem(key, JSON.stringify(val))
+    };
+
+    function formatDate(date) {
+      return date.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function daysLeft(dateStr) {
+      const diff = new Date(dateStr) - new Date();
+      return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    }
+
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    // ==================== NOTIFICATION SYSTEM ====================
+    function showNotification(msg) {
+      const notif = document.getElementById('notification');
+      notif.textContent = msg;
+      notif.style.display = 'block';
+      new Audio('https://www.soundjay.com/buttons/beep-07.mp3').play().catch(()=>{});
+      setTimeout(() => { notif.style.display = 'none'; }, 8000);
+    }
+
+    if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+      Notification.requestPermission();
+    }
+
+    function notifyBrowser(msg) {
+      if (Notification.permission === "granted") {
+        new Notification("MentorMe Reminder", { body: msg, icon: "https://img.icons8.com/emoji/96/000000/rocket.png" });
+      }
+    }
+
+    setInterval(() => {
+      const now = new Date();
+      const timeStr = now.toTimeString().slice(0,5); // HH:MM
+
+      // Check routine
+      const routine = ls.get('routine')[0] || {};
+      for (let key in routine) {
+        if (routine[key] === timeStr) {
+          const act = key.replace('Time','').replace(/([A-Z])/g,' $1').trim();
+          const emoji = {Wake:'🌅',Meditation:'🧘',Study:'📚',Gym:'💪',Sleep:'😴'}[act] || '⏰';
+          showNotification(`Time for ${act} ${emoji} — Stay disciplined!`);
+          notifyBrowser(`Time for ${act}!`);
+        }
+      }
+
+      // Check weekly tasks
+      const tasks = ls.get('weekly');
+      tasks.forEach(t => {
+        if (t.time === timeStr) {
+          showNotification(`Task: ${t.task} on ${t.day} — Let's go! 🔥`);
+          notifyBrowser(t.task);
+        }
+      });
+    }, 60000); // check every minute
+
+    // ==================== DASHBOARD ====================
+    function updateDashboard() {
+      document.getElementById('todayDate').textContent = formatDate(new Date());
+
+      const quotes = [
+        "Discipline is choosing between what you want now and what you want most.",
+        "Small steps every day lead to big results.",
+        "The pain of discipline is temporary — the pain of regret lasts forever.",
+        "You don’t find time for success — you make time."
+      ];
+      document.getElementById('motQuote').textContent = `${quotes[Math.floor(Math.random()*quotes.length)]}`;
+
+      // Next task (simple version - next weekly task today)
+      const today = new Date().toLocaleString('en-us', {weekday:'long'});
+      const tasks = ls.get('weekly').filter(t => t.day === today);
+      if (tasks.length > 0) {
+        tasks.sort((a,b) => a.time.localeCompare(b.time));
+        document.getElementById('nextTask').textContent = `${tasks[0].task} at ${tasks[0].time}`;
+      } else {
+        document.getElementById('nextTask').textContent = 'No tasks today — plan your week!';
+      }
+    }
+
+    // ==================== WEEKLY PLANNER ====================
+    function renderWeekly() {
+      const container = document.getElementById('weeklyList');
+      container.innerHTML = '';
+      const tasks = ls.get('weekly');
+
+      tasks.forEach((t, i) => {
+        const div = document.createElement('div');
+        div.className = `task-item ${t.done ? 'completed' : ''}`;
+        div.innerHTML = `
+          <span>${t.day} — ${t.task} <strong>@ ${t.time}</strong></span>
+          <div class="task-actions">
+            <button class="complete" onclick="toggleWeekly(${i})">${t.done ? 'Undo' : 'Done'}</button>
+            <button class="delete" onclick="deleteWeekly(${i})">Delete</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function addWeeklyTask() {
+      const day = document.getElementById('weekDay').value;
+      const task = document.getElementById('weekTask').value.trim();
+      const time = document.getElementById('weekTime').value;
+
+      if (!task || !time) return alert('Please fill task & time');
+
+      const tasks = ls.get('weekly');
+      tasks.push({ day, task, time, done: false });
+      ls.set('weekly', tasks);
+      renderWeekly();
+      document.getElementById('weekTask').value = '';
+      updateDashboard();
+    }
+
+    function toggleWeekly(i) {
+      const tasks = ls.get('weekly');
+      tasks[i].done = !tasks[i].done;
+      ls.set('weekly', tasks);
+      renderWeekly();
+    }
+
+    function deleteWeekly(i) {
+      const tasks = ls.get('weekly');
+      tasks.splice(i, 1);
+      ls.set('weekly', tasks);
+      renderWeekly();
+    }
+
+    // ==================== DAILY ROUTINE ====================
+    function saveRoutine() {
+      const routine = {
+        wakeTime: document.getElementById('wakeTime').value,
+        medTime: document.getElementById('medTime').value,
+        studyTime: document.getElementById('studyTime').value,
+        gymTime: document.getElementById('gymTime').value,
+        sleepTime: document.getElementById('sleepTime').value
+      };
+      ls.set('routine', [routine]);
+      alert('Daily routine saved! You will get notifications.');
+    }
+
+    function loadRoutine() {
+      const r = ls.get('routine')[0] || {};
+      for (let key in r) {
+        const el = document.getElementById(key);
+        if (el) el.value = r[key];
+      }
+    }
+
+    // ==================== PROJECTS ====================
+    function renderProjects() {
+      const container = document.getElementById('projectList');
+      container.innerHTML = '';
+      const projs = ls.get('projects');
+
+      projs.forEach((p, i) => {
+        const days = daysLeft(p.deadline);
+        const color = days < 3 ? '#e74c3c' : days < 7 ? '#fdcb6e' : '#00b894';
+
+        const div = document.createElement('div');
+        div.className = 'task-item';
+        div.style.borderLeftColor = color;
+
+        div.innerHTML = `
+          <div>
+            <strong>${p.name}</strong><br>
+            Deadline: ${p.deadline} (${days >= 0 ? days + ' days left' : 'Overdue!'})
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${p.progress}%"></div>
+            </div>
+          </div>
+          <div>
+            <input type="number" value="${p.progress}" min="0" max="100" onchange="updateProgress(${i}, this.value)" style="width:70px;"/> %
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function addProject() {
+      const name = document.getElementById('projName').value.trim();
+      const deadline = document.getElementById('projDeadline').value;
+      const progress = parseInt(document.getElementById('projProgress').value) || 0;
+
+      if (!name || !deadline) return alert('Name & deadline required');
+
+      let projs = ls.get('projects');
+      const existing = projs.find(p => p.name === name);
+      if (existing) {
+        existing.deadline = deadline;
+        existing.progress = progress;
+      } else {
+        projs.push({ name, deadline, progress });
+      }
+      ls.set('projects', projs);
+      renderProjects();
+      document.getElementById('projName').value = '';
+    }
+
+    function updateProgress(i, val) {
+      const projs = ls.get('projects');
+      projs[i].progress = parseInt(val) || 0;
+      ls.set('projects', projs);
+      renderProjects();
+    }
+
+    // ==================== EXAMS ====================
+    function renderExams() {
+      const container = document.getElementById('examList');
+      container.innerHTML = '';
+      const exams = ls.get('exams');
+
+      exams.forEach((e, i) => {
+        const days = daysLeft(e.date);
+        const color = days < 2 ? '#e74c3c' : days < 5 ? '#fdcb6e' : '#6c5ce7';
+
+        const div = document.createElement('div');
+        div.className = 'task-item';
+        div.style.borderLeftColor = color;
+        div.innerHTML = `
+          <span><strong>${e.subject}</strong> — ${e.date} (${days >= 0 ? days + ' days left' : 'Passed'})</span>
+          <button class="delete" onclick="deleteExam(${i})">Remove</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function addExam() {
+      const sub = document.getElementById('examSub').value.trim();
+      const date = document.getElementById('examDate').value;
+
+      if (!sub || !date) return alert('Subject & date required');
+
+      const exams = ls.get('exams');
+      exams.push({ subject: sub, date });
+      ls.set('exams', exams);
+      renderExams();
+      document.getElementById('examSub').value = '';
+    }
+
+    function deleteExam(i) {
+      const exams = ls.get('exams');
+      exams.splice(i, 1);
+      ls.set('exams', exams);
+      renderExams();
+    }
+
+    // ==================== INIT ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      updateDashboard();
+      renderWeekly();
+      loadRoutine();
+      renderProjects();
+      renderExams();
+    });
+  </script>
+</body>
+</html>
